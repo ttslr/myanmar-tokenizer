@@ -628,11 +628,20 @@ def analyzeParams(args):
             tokenizer.cutStd(stdin, stdout)
             stdin.close()
             if closeOut: stdout.close()
+            return stdin.name
 
         if opt.output != None and not os.path.isdir(opt.output):
             stdout = codecs.open(opt.output, 'w', 'utf8')
 
+        filecount = 0
+
+        def callback(value):
+            #print filecount, '\r',
+            pass
+
         for path in utils.getFiles(opt.input, recursive=True):
+            filecount += 1
+            print 'run:%8d\r' % filecount,
             stdin = codecs.open(path, 'r', opt.coding)
             if isdir:
                 op = os.path.join(opt.output, path[inputpathLen + 1:])
@@ -641,7 +650,7 @@ def analyzeParams(args):
                 except:
                     pass
                 stdout = codecs.open(op, 'w', 'utf8')
-            tokenizerTask.add_async(work, (tokenizer, stdin, stdout, isdir))
+            tokenizerTask.add_async(work, (tokenizer, stdin, stdout, isdir), callback=callback)
         tokenizerTask.join()
 
 if __name__ == "__main__":
